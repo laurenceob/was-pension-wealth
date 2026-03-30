@@ -102,6 +102,7 @@ Prepares the WAS microdata and produces all outputs.
 
 | Script | Description |
 |--------|-------------|
+| `Run WAS benefit unit code.do` | Assigns benefit unit numbers to person-level WAS records across waves 2–8 using `assignWASbunos.ado` |
 | `get_was_vars.do` | Appends WAS waves 1–8 and harmonises variables across waves |
 | `clean_was.do` | Applies cleaning, wave 2 adjustments, and constructs wealth variables |
 | `was_analysis_new.do` | Defines and runs all analysis programs producing figures and tables |
@@ -144,6 +145,7 @@ Two custom Stata ado files are included in the `was_cleaning/` subdirectory and 
 
 - A random seed (`set seed 359345`) is set in `master.do`.
 - Wealth is deflated to March 2026 prices using CPIH (`$cpih_index = 141.5`, from the March 2026 OBR EFO).
+- The RPI–CPI wedge (`$rpicpiwedge = 0.009`) and CPIH–CPI wedge (`$cpihcpiwedge = 0.0039`) used in pension valuation are sourced from OBR publications and set in `master.do`.
 - Home contents wealth is reduced by 75% following Advani et al. (2021), as the WAS questionnaire elicits replacement rather than market value.
 
 ---
