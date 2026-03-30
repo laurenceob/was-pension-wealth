@@ -6,6 +6,7 @@
 /* Date started: 09/02/2023													  */
 ********************************************************************************
 
+* This program creates some of the derived variables needed for the pension wealth calculation in early waves 
 cap program drop create_penvars_earlywaves
 program define create_penvars_earlywaves
 
@@ -47,6 +48,7 @@ program define create_penvars_earlywaves
 	
 end 
 
+* This program creates an adjusted retirement age variable (i.e. applying a floor of 60 to normal retirement age)
 cap program drop adjust_retage
 program define adjust_retage
 
@@ -82,6 +84,19 @@ program define adjust_retage
 
 end 
 
+* This program creates new measures of derived pension wealth 
+/* 
+Inputs:
+	- dset: string denoting the wave/round e.g. w1 
+	- disc_type: indicates the variables used for discounting future DB pension income. Has to be one of gilt, scpe, aa, constant, wasOLD
+	- ann_type: indicates the variables used for calculating annuity rates. Has to be one of gilt, scpe, aa, constant, wasOLD
+	- sfx: indicates the suffix that the new pension wealth variables will have 
+	
+Outputs are created variables:
+	- totpen`dset'`suffix': total individual pension wealth in wave/round under the given annuity factor and discount rate
+	- Together with a bunch of other variables that are used to calculate this variable
+ 
+ */
 cap program drop clean_penwealth
 program define clean_penwealth
 

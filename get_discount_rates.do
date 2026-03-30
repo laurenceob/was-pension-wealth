@@ -2,14 +2,8 @@
 **** Title: 		get_discount_rates.do 
 **** Author: 		Laurence O'Brien 
 **** Date started: 	12/06/2025
-**** Description:	Get the different discount rates for calculating pension wealth
+**** Description:	Takes raw data containing gilt yields and corporate bond yields and cleans it ready for use
 ********************************************************************************/
-
-* RPI-CPI wedge is 0.9ppt from here https://obr.uk/box/the-long-run-difference-between-rpi-and-cpi-inflation/
-global rpicpiwedge = 0.009
-* The CPIH-CPI wedge is from here https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
-* In Oct 2020 it was announced that RPI would be made equal to CPIH from 2030 on 
-global cpihcpiwedge = 0.0039
 
 ********************************************************************************
 * Gilts

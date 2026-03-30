@@ -4,8 +4,6 @@
 **** Date started: 	25/06/2025
 **** Description:	Calculate annuity rates by year/month and distance to retirement 
 ********************************************************************************/
-global rpicpiwedge = 0.009
-
 local yoblo 1921 
 local yobmi 1950
 local agelo 35

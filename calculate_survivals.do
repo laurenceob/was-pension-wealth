@@ -2,7 +2,10 @@
 **** Title: 		calculate_survivals.do 
 **** Author: 		Laurence O'Brien 
 **** Date started: 	21/06/2025
-**** Description:	Calculate survival probabilities by age, cohort and sex. Also partner survival probs.
+**** Description:	Calculate survival probabilities by age, cohort and sex. Also partner survival probs. 
+					These are needed for annuity rate calcs 
+					Note one annoying thing is that I have data for loads more years in 2008/10/20/22 than in 2012/14/16/18.
+					So I have to copy across surivival probabilities for these years for 2012-18 from either 2010 or 2020 
 ********************************************************************************/
 
 ********************************************************************************

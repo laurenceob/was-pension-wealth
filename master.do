@@ -48,6 +48,13 @@ global constant_rate 0
 * CPIH index value for deflating wealth to March 2026 prices (March 2026 OBR EFO)
 global cpih_index = 141.5
 
+* RPI-CPI wedge is 0.9ppt from here https://obr.uk/box/the-long-run-difference-between-rpi-and-cpi-inflation/
+global rpicpiwedge = 0.009
+
+* The CPIH-CPI wedge is from here https://obr.uk/efo/economic-and-fiscal-outlook-march-2025/
+* Note in Oct 2020 it was announced that RPI would be made equal to CPIH from 2030 on 
+global cpihcpiwedge = 0.0039
+
 ********************************************************************************
 *** Run code
 ********************************************************************************
@@ -60,6 +67,7 @@ do "$code/calculate_forward_rates"
 do "$code/calculate_annuity_rates"
 
 * Code for cleaning WAS and creating analysis sample 
+do "$code/Run WAS benefit unit code" // creates benefit unit mappings 
 do "$code/get_was_vars"
 main 
 do "$code/clean_was"

@@ -452,7 +452,7 @@ end
 
 *** Appendix 
 
-* Fig B.1.: Mean household wealth over time by methodology
+* Fig B.1: Mean household wealth over time by methodology
 capture program drop mean_hh_wealth_over_time_all
 program define mean_hh_wealth_over_time_all 
 

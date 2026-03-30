@@ -2,11 +2,9 @@
 **** Title: 		calculate_forward_rates.do 
 **** Author: 		Laurence O'Brien 
 **** Date started: 	25/06/2025
-**** Description:	Calculate annuity rates by year/month and distance to retirement 
+**** Description:	Calculate forward rates 
+					A forward rate is e.g. what is the 15 year gilt yield starting 5 years from now?
 ********************************************************************************/
-
-global rpicpiwedge = 0.009
-global aagiltdiff = 0.0119
 
 ********************************************************************************
 * Calculate the forward rates for gilts 
@@ -88,6 +86,7 @@ forval i = -30(1)2 {
 * For simplicity we just add on the average wedge between AA bonds and gilts over our sample period
 * Given we don't have the same granularity in maturities for AA bonds as we do for gilts
 * So we can't do the same exercise 
+global aagiltdiff = 0.0119
 
 gen real_aa_forward_rate = real_gilt_forward_rate + $aagiltdiff
 

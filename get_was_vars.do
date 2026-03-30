@@ -2,7 +2,7 @@
 **** Title: 		get_was_vars.do 
 **** Author: 		Laurence O'Brien 
 **** Date started: 	26/10/2023 
-**** Description:	Append different rounds of WAS
+**** Description:	Append different rounds of WAS and apply pension wealth calculation 
 ********************************************************************************/
 
 cap program drop main 
