@@ -25,7 +25,7 @@ global project_root "J:\PensionsTax\wealth_report"
 global rawWAS "I:\WAS\unrestricted\stata\UKDA-7215-stata\stata\stata_se"
 
 ********************************************************************************
-*** DO NOT EDIT BELOW THIS LINE
+*** DERIVED PATHS - ensure that you create these in your project directory before running
 ********************************************************************************
 
 * Derived path globals (set relative to project_root — no need to edit)
@@ -34,9 +34,13 @@ global workingdata "$project_root/data"
 global rawdata "$project_root/rawdata"
 global output "$project_root/output"
 
-set seed 359345
-
 adopath + "$code/was_cleaning"
+
+********************************************************************************
+*** Set constants
+********************************************************************************
+
+set seed 359345
 
 * Discount rate used in constant-rate pension valuation scenario
 global constant_rate 0
@@ -44,7 +48,9 @@ global constant_rate 0
 * CPIH index value for deflating wealth to March 2026 prices (March 2026 OBR EFO)
 global cpih_index = 141.5
 
+********************************************************************************
 *** Run code
+********************************************************************************
 
 * Code for DB pension valuation, making discount rates and annuity rates
 do "$code/was_db_correction_new"

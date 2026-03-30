@@ -15,22 +15,21 @@ program define main
 	wealth_dist_r8
 	top_wealth_share_over_time
 	avg_wealth_by_educ
+	db_share_by_educ
 	wealth_composition_by_age_r8
 	avg_wealth_by_age_r8 
 	wealth_by_age_wave
 	
 	* Appendix 
 	mean_hh_wealth_over_time_all
-	median_hh_wealth_over_time
-	avg_wealth_by_pentype
+	gini_coefficient_over_time
 	pens_wealth_comparison_by_age
 	
 	
 
 end 
 
-*** Main text 
-
+* Helper program: restricts data to one observation per household (the household reference person)
 capture program drop keep_hh_ref_person
 program define keep_hh_ref_person
 
@@ -51,6 +50,9 @@ program define keep_hh_ref_person
 
 end
 
+*** Main figures
+
+* Fig 1: Mean household wealth over time by methodology
 capture program drop mean_hh_wealth_over_time
 program define mean_hh_wealth_over_time 
 
@@ -73,6 +75,7 @@ program define mean_hh_wealth_over_time
 
 end 
 
+* Fig 2: Share of household wealth in pensions over time, by methodology
 capture program drop wealth_composition_over_time
 program define wealth_composition_over_time
 
@@ -95,6 +98,7 @@ program define wealth_composition_over_time
 
 end 
 
+* Fig 3: Discount rates over time
 capture program drop plot_discount_rates
 program define plot_discount_rates
 
@@ -145,41 +149,11 @@ program define plot_discount_rates
 	
 	* Export to create word graph
 	export excel using "$output/was_report_underlying_data_new.xlsx", first(var) sheet("plot_discount_rates", replace)
-	
-	
-	/*
-	use "$workingdata/was_clean", clear 
-	keep dataset_no year month mnthscape
-	sort year month
-	egen max_scape = max(mnthscape), by(month year dataset_no)
-	drop if missing(mnthscape) & !missing(max_scape)
-	drop max_scape
-	duplicates drop
-	isid month year dataset_no
-	merge m:1 year month using `cpi', keep(1 3) nogen
-	gen implied_real_scape = mnthscape - cpi_rate
-	gen implied_cpi = mnthscape - 0.03 if dataset < 8
-	
-	* Something weird going on in Round 6...
-	* I'm just going to add monthly CPI to real SCAPE
-	* This isn't exactly what WAS uses but gives the idea 
-
-	
-	
-	* what is the average difference in AA and gilt yields?
-	qui sum real_aa_yield
-	local mean_aa = `r(mean)'
-	qui sum real_gilt_yield
-	local mean_gilt = `r(mean)'
-	local diff = `mean_aa' - `mean_gilt'
-	di "Mean wedge between AA bond yields and gilts is `diff'"
-	di `diff' * 100
-	* 1.19ppt  */
-
 
 
 end 
 
+* Fig 4: distribution of household wealth in WAS Round 8 by methodology
 capture program drop wealth_dist_r8
 program define wealth_dist_r8
 	
@@ -219,18 +193,19 @@ program define wealth_dist_r8
 
 end 
 
+* Fig 5: Top 10% share of household wealth over time by methodology
 capture program drop top_wealth_share_over_time
 program define top_wealth_share_over_time
 
 	use "$workingdata/was_clean", clear 
 	keep_hh_ref_person
 	
-	* Calculate who's in the top 10% of the distribution in each wave/round 
 	tempfile tomerge 
 	foreach var of varlist tothhwlth_gilt_r tothhwlth_was_old_r tothhwlth_was_new_r tothhwlth_scpe_r tothhwlth_decomp_r {
 		
 		preserve 
-		
+
+		* Calculate who's in the top 10% of the distribution in each wave/round 
 		gen top10_`var' = 0
 		forval i = 1/8 {
 			qui sum `var' if dataset_no == `i' [w=xshhwgt], d
@@ -263,10 +238,10 @@ program define top_wealth_share_over_time
 
 end 
 
+* Fig 6: Median individual wealth over time by education level and methodology
 capture program drop avg_wealth_by_educ
 program define avg_wealth_by_educ 
 
-	* Actually let's also get the difference between median wealth 
 	use "$workingdata/was_clean", clear 
 
 	replace xswgt_nonproxy = xswgt if persprox != 2 & dataset_no == 3
@@ -297,10 +272,10 @@ program define avg_wealth_by_educ
 	
 end 
 
+* Stats in report: share with DB wealth by education 
 capture program drop db_share_by_educ
 program define db_share_by_educ 
 
-	* Actually let's also get the difference between median wealth 
 	use "$workingdata/was_clean", clear 
 	
 	keep if dataset_no == 8
@@ -330,6 +305,7 @@ program define db_share_by_educ
 
 end 
 
+* Fig 7: Composition of individual wealth by age group in WAS Round 8
 capture program drop wealth_composition_by_age_r8
 program define wealth_composition_by_age_r8
 
@@ -386,6 +362,7 @@ program define wealth_composition_by_age_r8
 
 end 
 
+* Fig 8: Median individual wealth in WAS round 8, by age and methodology
 capture program drop avg_wealth_by_age_r8
 program define avg_wealth_by_age_r8 
 
@@ -428,6 +405,7 @@ program define avg_wealth_by_age_r8
 	
 end 
 
+* Fig 9: Share of aggregate total individual wealth held by individuals of different ages over time, by methodology
 capture program drop wealth_by_age_wave
 program define wealth_by_age_wave
 
@@ -474,6 +452,7 @@ end
 
 *** Appendix 
 
+* Fig B.1.: Mean household wealth over time by methodology
 capture program drop mean_hh_wealth_over_time_all
 program define mean_hh_wealth_over_time_all 
 
@@ -492,67 +471,48 @@ program define mean_hh_wealth_over_time_all
 
 end 
 
-capture program drop median_hh_wealth_over_time
-program define median_hh_wealth_over_time 
+* Fig B.2: Gini coefficient of household wealth over time by methodology
+capture program drop gini_coefficient_over_time
+program define gini_coefficient_over_time 
 
 	use "$workingdata/was_clean", clear 
 	keep_hh_ref_person
 	
-	foreach var of varlist tothhwlth*_r totpen_*_hh_r {
-		gen `var'_p50 = `var'
-	}
-	
-	* Get median wealth by wave/round 
-	collapse (median) *_p50 [pw=xshhwgt], by(dataset_no)
-		
-	drop *decomp*	
-	
-	* Export to create word graph 
-	export excel dataset_no *wlth*_p50 using "$output/was_report_underlying_data_new.xlsx", first(var) sheet("median_hh_wealth_over_time", replace)
-
-end 
-
-capture program drop avg_wealth_by_pentype
-program define avg_wealth_by_pentype
-	
-	use "$workingdata/was_clean", clear 
-
 	replace xswgt_nonproxy = xswgt if persprox != 2 & dataset_no == 3
 	replace xswgt_nonproxy = 0 if persprox == 2 & dataset_no == 3
-
-	* Create more aggregated pension type variable 
-	gen pentype_agg = pentype
-	replace pentype_agg = 2 if pentype == 3
-	label define pentype_agg 0 "No pension" 1 "Only DC" 2 "DB"
-	label values pentype_agg pentype_agg 
 	
-	* Just keep adults 
-	keep if dvage17 >= 5
+	foreach x in gilt was_new was_old {
 	
-	* Get median wealth by dataset and age group
-	gen n = 1
-	collapse (median) totindwlth_*_r (rawsum) n [pw=xswgt_nonproxy], by(dataset_no pentype_agg)
-	assert n <= 20 if missing(pentype_agg)
-	drop if missing(pentype_agg)
+		* Where to store the ginis 
+		gen gini_`x'_hh = . 
+		gen gini_`x'_ind = . 
+		
+		forval i = 1/8 {
+			
+			* Calculate the ginis 
+			fastgini tothhwlth_`x'_r if dataset_no == `i' [pw=xshhwgt]
+			replace gini_`x'_hh = `r(gini)' if dataset_no == `i'		
+			
+			if `i' < 3 continue
+			
+			* Calculate the ginis 
+			fastgini totindwlth_`x'_r if dataset_no == `i' [pw=xswgt_nonproxy]
+			replace gini_`x'_ind = `r(gini)' if dataset_no == `i'		
+			
+		}
+			
+	}
 	
-	* REshape 
-	keep dataset_no pentype_agg totindwlth_gilt_r totindwlth_was_new_r 
-	reshape wide totindwlth_gilt_r totindwlth_was_new_r, i(dataset_no) j(pentype_agg) 
-	
-	label var totindwlth_gilt_r0 "No pension (IFS methodology)"
-	label var totindwlth_gilt_r1 "DC only (IFS methodology)"
-	label var totindwlth_gilt_r2 "DB (IFS methodology)"
-	label var totindwlth_was_new_r0 "No pension (ONS methodology)"
-	label var totindwlth_was_new_r1 "DC only (ONS methodology)"
-	label var totindwlth_was_new_r2 "DB (ONS methodology)"
+	* Collapse 
+	collapse (mean) gini_*, by(dataset_no)
 	
 	* Export 
-	export excel using "$output/was_report_underlying_data_new.xlsx", first(varl) sheet("median_wealth_by_pentype", replace)
-	
+	export excel using "$output/was_report_underlying_data_new.xlsx", first(var) sheet("gini_coefficients", replace)
 
-	
-end 
-
+end  
+ 
+* Fig B.3: Ratio of total individual pension wealth calcualted using IFS methodology versus total individual pension wealth
+* calculated using ONS methodology by age group, over time 
 capture program drop pens_wealth_comparison_by_age 
 program define pens_wealth_comparison_by_age
 
@@ -599,553 +559,3 @@ program define pens_wealth_comparison_by_age
 	export excel using "$output/was_report_underlying_data_new.xlsx", first(varl) sheet("pens_wealth_comparison_by_age", replace)
 
 end 
-
-* Maybe delete?
-capture program drop rank_move_by_db_wealth
-program define rank_move_by_db_wealth
-
-	use "$workingdata/was_clean", clear 
-	keep_hh_ref_person
-	
-	* Just do this for round 8 
-	keep if dataset_no == 8 
-	
-	* What share of wealth is held in pensions under ONS methodology (including already accessed DB pensions)
-	gen db_share = totdbpen_was_new_hh_r / tothhwlth_was_new_r
-	gen db_share_bin = 1 if db_share == 0 | totdbpen_was_new_hh_r < 0 // no idea why WAS has someone with negative DB wealth but I'll put them here...
-	replace db_share_bin = 2 if db_share > 0 & db_share <= 0.25
-	replace db_share_bin = 3 if db_share > 0.25 & db_share <= 0.6
-	replace db_share_bin = 4 if (db_share > 0.6 & db_share <= 1) | tothhwlth_was_new_r < totdbpen_was_new_hh_r 
-	label define db_share_bin 1 "0%" 2 "0-25%" 3 "25-60%" 4 ">60%"
-	label values db_share_bin db_share_bin 
-	
-	* Get wealth percentile 
-	xtile hhwlth_rank_gilt = tothhwlth_gilt_r [pw=xshhwgt], nq(100)
-	xtile hhwlth_rank_was_new = tothhwlth_was_new_r [pw=xshhwgt], nq(100)
-	
-	* And change in wealth percentile 
-	gen wlthrank_change = hhwlth_rank_gilt - hhwlth_rank_was_new
-	
-	* Collapse to get average ranks by pension wealth decile 
-	gen n = 1
-	collapse (mean) hhwlth_rank_gilt hhwlth_rank_was_new wlthrank_change (sum) n [pw=xshhwgt], by(db_share_bin)
-	
-	* Get pop shares 
-	egen tot = sum(n)
-	gen pop_shr = n / tot
-	drop tot
-	
-	* Label 
-	label var hhwlth_rank_gilt "IFS methodology"
-	label var hhwlth_rank_was_new "WAS methodology"
-	
-	* Export 
-	export excel using "$output/was_report_underlying_data_new.xlsx", first(var) sheet("rank_move_by_db_wealth", replace)
-
-end 
- 
-capture program drop gini_analysis
-program define gini_analysis 
-
-	use "$workingdata/was_clean", clear 
-	keep_hh_ref_person
-	
-	replace xswgt_nonproxy = xswgt if persprox != 2 & dataset_no == 3
-	replace xswgt_nonproxy = 0 if persprox == 2 & dataset_no == 3
-	
-	foreach x in gilt was_new was_old {
-	
-		* Where to store the ginis 
-		gen gini_`x'_hh = . 
-		gen gini_`x'_ind = . 
-		
-		forval i = 1/8 {
-			
-			* Calculate the ginis 
-			fastgini tothhwlth_`x'_r if dataset_no == `i' [pw=xshhwgt]
-			replace gini_`x'_hh = `r(gini)' if dataset_no == `i'		
-			
-			if `i' < 3 continue
-			
-			* Calculate the ginis 
-			fastgini totindwlth_`x'_r if dataset_no == `i' [pw=xswgt_nonproxy]
-			replace gini_`x'_ind = `r(gini)' if dataset_no == `i'		
-			
-		}
-			
-	}
-	
-	* Collapse 
-	collapse (mean) gini_*, by(dataset_no)
-	
-	* Export 
-	export excel using "$output/was_report_underlying_data_new.xlsx", first(var) sheet("gini_coefficients", replace)
-
-end  
- 
- 
-/* Analysis we don't use 
-
-capture program drop cohort_by_age_plot
-program define cohort_by_age_plot
-
-	use "$workingdata/was_clean", clear 
-	
-	* Make consistent weight 
-	replace xswgt_nonproxy = xswgt if persprox != 2 & dataset_no == 3
-	replace xswgt_nonproxy = 0 if persprox == 2 & dataset_no == 3
-
-	* Approximate age and birth year 
-	gen rand = runiform()
-	gen approxage = .
-	replace approxage = (dvage17 * 5) - 1 if rand < 0.2
-	replace approxage = (dvage17 * 5) - 2 if inrange(rand, 0.2, 0.4)
-	replace approxage = (dvage17 * 5) - 3 if inrange(rand, 0.4, 0.6)
-	replace approxage = (dvage17 * 5) - 4 if inrange(rand, 0.6, 0.8)
-	replace approxage = (dvage17 * 5) - 5 if rand > 0.8
-	gen doby = year - approxage
-	drop rand 
-	
-	* Get cohort 
-	gen cohort = 1 if inrange(doby, 1930, 1939)
-	replace cohort = 2 if inrange(doby, 1940, 1949)
-	replace cohort = 3 if inrange(doby, 1950, 1959)
-	replace cohort = 4 if inrange(doby, 1960, 1969)
-	replace cohort = 5 if inrange(doby, 1970, 1979)
-	replace cohort = 6 if inrange(doby, 1980, 1989)
-	
-	gen n = 1
-	
-	* Collapse to get median individual wealth by age and cohort 
-	collapse (median) tothhwlth_was_new_r tothhwlth_gilt_r (rawsum) n [pw=xswgt_nonproxy], by(cohort approxage) 
-	drop if n < 250
-	drop if missing(cohort)
-	
-	* Make graphs 
-	#delimit ; 
-	graph twoway
-		(connected tothhwlth_was_new_r approxage if cohort == 1)
-		(connected tothhwlth_was_new_r approxage if cohort == 2)
-		(connected tothhwlth_was_new_r approxage if cohort == 3)
-		(connected tothhwlth_was_new_r approxage if cohort == 4)
-		(connected tothhwlth_was_new_r approxage if cohort == 5)
-		(connected tothhwlth_was_new_r approxage if cohort == 6),
-		legend(order(1 "1930s" 2 "1940s" 3 "1950s" 4 "1960s" 5 "1970s" 6 "1980s")) xtitle("Age") ytitle("Median individual wealth");
-	
-	graph twoway
-		(connected tothhwlth_gilt_r approxage if cohort == 1)
-		(connected tothhwlth_gilt_r approxage if cohort == 2)
-		(connected tothhwlth_gilt_r approxage if cohort == 3)
-		(connected tothhwlth_gilt_r approxage if cohort == 4)
-		(connected tothhwlth_gilt_r approxage if cohort == 5)
-		(connected tothhwlth_gilt_r approxage if cohort == 6),
-		legend(order(1 "1930s" 2 "1940s" 3 "1950s" 4 "1960s" 5 "1970s" 6 "1980s")) xtitle("Age") ytitle("Median individual wealth");
-	#delimit cr
-			
-	* Reshape 
-	reshape wide tothhwlth_was_new_r tothhwlth_gilt_r n, i(approxage) j(cohort)
-	
-	* Export 
-	export excel tothhwlth_was_new* using "$output/was_report_underlying_data_new.xlsx", first(var) sheet("cohort_by_age_plot_was", replace)
-	export excel tothhwlth_gilt_* using "$output/was_report_underlying_data_new.xlsx", first(var) sheet("cohort_by_age_plot_gilt", replace)
-
-
-end 
-
-capture program drop inequality_ratio_over_time 
-program define inequality_ratio_over_time
-
-	use "$workingdata/was_clean", clear 
-	keep_hh_ref_person
-	
-	* Collapse to get the 50th and 90th percentile 
-	foreach var of varlist tothhwlth*_r {
-		gen `var'_p90 = `var'
-		gen `var'_p50 = `var'
-	}
-	collapse (p50) *_p50 (p90) *_p90 [pw=xshhwgt], by(dataset_no)
-	
-	foreach x in gilt aa scpe was_new was_old constant {
-		gen ratio_90_50_`x' = tothhwlth_`x'_r_p90 / tothhwlth_`x'_r_p50
-	}
-	keep dataset_no ratio*
-	
-	* Export
-	export excel using "$output/was_report_underlying_data_new.xlsx", first(var) sheet("inequality_ratio_over_time", replace)
-
-
-end 
-
-capture program drop wealth_dist_r8
-program define wealth_dist_r8
-
-	* or do i want this to have two panels so i can show a few waves for each methodology? 
-
-	use "$workingdata/was_clean", clear 
-	keep_hh_ref_person
-	
-	* Just focus on round 8 
-	keep if dataset_no == 8
-	
-	* Collapse 
-	foreach var of varlist tothhwlth*_r {
-		forval i = 10(10)90 {
-			gen `var'_p`i' = `var'
-		}
-	}
-	collapse (p10) *_p10 (p20) *_p20 (p30) *_p30 (p40) *_p40 (p50) *_p50 (p60) *_p60 (p70) *_p70 (p80) *_p80 (p90) *_p90 [pw=xshhwgt], by(dataset_no)
-	
-	* Reshape 
-	reshape long tothhwlth_gilt_r tothhwlth_aa_r tothhwlth_scpe_r tothhwlth_was_new_r tothhwlth_was_old_r, i(dataset_no) j(stat) string
-
-	* Clean up 
-	drop dataset_no
-	gen percentile = substr(stat, -2, .)
-	destring percentile, replace 
-	drop stat
-	
-	* Export 
-	keep percentile tothhwlth_gilt_r tothhwlth_was_new_r 
-	order percentile tothhwlth_gilt_r tothhwlth_was_new_r
-	label var tothhwlth_gilt_r "Gilt yields"
-	label var tothhwlth_was_new_r "WAS methodology (new)"
-	export excel using "$output/was_report_underlying_data_new.xlsx", first(varl) sheet("wealth_dist_r8", replace)
-
-	
-
-end 
-
-capture program drop wealth_by_age_group
-program define wealth_by_age_group 
-
-	use "$workingdata/was_clean", clear 
-	keep_hh_ref_person
-
-	* Create age group variable
-	assert !mi(dvage17)
-	gen age_group = 1 if dvage17 <= 7
-	replace age_group = 2 if inrange(dvage17, 8, 10)
-	replace age_group = 3 if inrange(dvage17, 11, 12)
-	replace age_group = 4 if inrange(dvage17, 13, 14)
-	replace age_group = 5 if dvage17 >= 15
-	label define age_group 1 "Age up to 34" 2 "Age 35-49" 3 "Age 50-59" 4 "Age 60-69" 5 "Age 70+"
-	label values age_group age_group
-	
-	* Calculate total household wealth 
-	collapse (sum) tothhwlth_*_r [pw=xshhwgt], by(age_group dataset_no)
-	
-	* Create the shares of total wealth 
-	foreach var of varlist tot* {
-		egen `var'_sum = sum(`var'), by(dataset_no)
-		gen `var'_shr = `var' / `var'_sum
-	}
-
-	* Reshape 
-	keep *was_new_r_shr *gilt_r_shr dataset_no age_group
-	reshape wide tothhwlth_gilt_r_shr tothhwlth_was_new_r_shr, i(dataset_no) j(age_group)
-	foreach x in was_new gilt {
-		label var tothhwlth_`x'_r_shr1 "Age up to 34"
-		label var tothhwlth_`x'_r_shr2 "Age 35-49"
-		label var tothhwlth_`x'_r_shr3 "Age 50-59"
-		label var tothhwlth_`x'_r_shr4 "Age 60-69"
-		label var tothhwlth_`x'_r_shr5 "Age 70+"
-	}
-	
-	* Export 
-	export excel dataset_no tothhwlth_gilt_r_shr* using "$output/was_report_underlying_data_new.xlsx", first(varl) sheet("wealth_by_age_wave_gilt", replace)
-	export excel dataset_no tothhwlth_was_new_r_shr* using "$output/was_report_underlying_data_new.xlsx", first(varl) sheet("wealth_by_age_wave_was_new", replace)
-
-end 
-
-capture program drop more_investigation
-program define more_investigation
-
-	use "$workingdata/was_clean", clear 
-	keep_hh_ref_person
-	
-	* Round 8 
-	keep if dataset_no == 8
-	
-	corr tothhwlth_gilt_r tothhwlth_was_new_r
-
-	* Pension wealth vs non pension wealth correlation 
-	gen nonpen_hhwlth_was_new_r = tothhwlth_was_new_r - totpen_was_new_hh_r
-
-	corr nonpen_hhwlth_was_new_r totpen_was_new_hh_r
-	
-	* how big is the increase in pension wealth 
-	gen pens_increase = (totpen_gilt_hh_r / totpen_was_new_hh_r) - 1
-	corr pens_increase nonpen_hhwlth_was_new_r
-	corr pens_increase totpen_was_new_hh_r
-	
-	gen pens_increase_abs = totpen_gilt_hh_r - totpen_was_new_hh_r
-	corr pens_increase_abs nonpen_hhwlth_was_new_r
-	corr pens_increase_abs totpen_was_new_hh_r
-	
-	gen wealth_increase = (tothhwlth_gilt_r - tothhwlth_was_new_r)
-	
-	* Ok what is the mean increase in pension wealth by intiial household wealth decile? 
-	xtile hhwlth_decile_was_new = tothhwlth_was_new_r [pw=xshhwgt], nq(10)
-	
-	collapse (mean) wealth_increase pens_increase_abs tothhwlth_was_new_r  [pw=xshhwgt], by(hhwlth_decile_was_new)
-	
-	* Percentage increase 
-	gen pc_increase = pens_increase / tothhwlth_was_new_r
-	
-	
-	
-	
-	use "$workingdata/was_clean", clear 
-	keep_hh_ref_person
-	
-	* Get deciles of household wealth under each methodology 
-	gen hhwlth_decile_gilt = .
-	gen hhwlth_decile_was_new = . 
-	forval i = 1/8 {
-		xtile hhwlth_decile_gilt`i' = tothhwlth_gilt_r [pw=xshhwgt] if dataset_no == `i', nq(10)
-		replace hhwlth_decile_gilt = hhwlth_decile_gilt`i' if dataset_no == `i'
-		xtile hhwlth_decile_was_new`i' = tothhwlth_was_new_r [pw=xshhwgt] if dataset_no == `i', nq(10)
-		replace hhwlth_decile_was_new = hhwlth_decile_was_new`i' if dataset_no == `i'
-		drop hhwlth_decile_gilt`i' hhwlth_decile_was_new`i'
-	}
-	
-	* Get total household wealth in each decile for each methodology 	
-	preserve
-	collapse (sum) tothhwlth_gilt_r [pw=xshhwgt], by(hhwlth_decile_gilt dataset_no)
-	ren *decile* decile 
-	tempfile tomerge 
-	save `tomerge', replace 
-	restore 
-	collapse (sum) tothhwlth_was_new_r [pw=xshhwgt], by(hhwlth_decile_was_new dataset_no)
-	ren *decile* decile
-	merge 1:1 decile dataset_no using `tomerge', assert(1 3) nogen
-	
-	* Get totals and shares 
-	foreach x in gilt was_new {
-		egen total_`x' = sum(tothhwlth_`x'_r), by(dataset_no)
-		gen shr_`x' = tothhwlth_`x'_r / total_`x'
-	}
-	
-	keep if dataset_no == 8 
-	drop total*
-	gen pc_increase = tothhwlth_gilt_r / tothhwlth_was_new_r
-	gen abs_increase = tothhwlth_gilt_r - tothhwlth_was_new_r
-	egen total_increase = sum(abs_increase)
-	gen share_increase = abs_increase / total_increase
-	
-	
-	* What if we do this without reranking 
-	
-	use "$workingdata/was_clean", clear 
-	keep_hh_ref_person
-	
-	* Get deciles of household wealth under each methodology 
-	gen hhwlth_decile_was_new = . 
-	forval i = 1/8 {
-		xtile hhwlth_decile_was_new`i' = tothhwlth_was_new_r [pw=xshhwgt] if dataset_no == `i', nq(10)
-		replace hhwlth_decile_was_new = hhwlth_decile_was_new`i' if dataset_no == `i'
-		drop hhwlth_decile_was_new`i'
-	}
-	
-	* Get total household wealth in each decile for each methodology 	
-	collapse (sum) tothhwlth_gilt_r tothhwlth_was_new_r [pw=xshhwgt], by(hhwlth_decile_was_new dataset_no)
-	
-	* Get totals and shares 
-	foreach x in gilt was_new {
-		egen total_`x' = sum(tothhwlth_`x'_r), by(dataset_no)
-		gen shr_`x' = tothhwlth_`x'_r / total_`x'
-	}
-	
-	keep if dataset_no == 8 
-	drop total*
-	gen pc_increase = tothhwlth_gilt_r / tothhwlth_was_new_r
-	gen abs_increase = tothhwlth_gilt_r - tothhwlth_was_new_r
-	egen total_increase = sum(abs_increase)
-	gen share_increase = abs_increase / total_increase
-
-end 
-
-capture program drop south_east_wealth_share
-program define south_east_wealth_share
-
-	use "$workingdata/was_clean", clear 
-	keep_hh_ref_person
-			
-	* Create South East variable 
-	gen south_east = inlist(gor, 8, 9)
-	
-	* Collapse 
-	collapse (sum) tothhwlth_*_r [pw=xshhwgt], by(south_east dataset_no)
-			
-	* Get the south east share 
-	foreach var of varlist tothhwlth* {
-		egen `var'_sum = sum(`var'), by(dataset_no)
-		gen `var'_se_shr = `var' / `var'_sum
-	}
-
-	* Just keep south east share 
-	keep if south_east == 1 
-	drop south_east
-	keep dataset_no *se_shr
-	
-	* Export 
-	export excel using "$output/was_report_underlying_data_new.xlsx", first(var) sheet("south_east_wealth_share", replace)
-	
-
-end 
-
-capture program drop regional_wealth_dist_r8
-program define regional_wealth_dist_r8
-
-	use "$workingdata/was_clean", clear 
-	keep_hh_ref_person
-	
-	* Calculate median wealth in round 8 by region and methodology
-	keep if dataset_no == 8 
-	collapse (median) tothhwlth_*_r [pw=xshhwgt], by(gor)
-
-	* Will try to make a map 
-	* Export for now and work this out later 
-	keep gor tothhwlth_gilt_r tothhwlth_was_new_r
-	label var tothhwlth_gilt_r "IFS"
-	label var tothhwlth_gilt_r "WAS"
-	export excel using "$output/was_report_underlying_data_new.xlsx", first(var) sheet("regional_wealth_dist_r8", replace)
-
-end 
-
-capture program drop median_indwealth_by_sex
-program define median_indwealth_by_sex
-
-	use "$workingdata/was_clean", clear 
-
-	replace xswgt_nonproxy = xswgt if persprox != 2 & dataset_no == 3
-	replace xswgt_nonproxy = 0 if persprox == 2 & dataset_no == 3
-
-	* Get median wealth by dataset and age group
-	collapse (median) totindwlth_*_r (mean) mean_was_new=totindwlth_was_new_r mean_gilt=totindwlth_gilt_r [pw=xswgt_nonproxy], by(dataset_no sex)
-	
-	* REshape for outputting 
-	keep dataset_no sex totindwlth_gilt_r totindwlth_was_new_r 
-	reshape wide totindwlth_gilt_r totindwlth_was_new_r, i(dataset_no) j(sex) 
-	
-	label var totindwlth_gilt_r1 "IFS methodology - men"
-	label var totindwlth_gilt_r2 "IFS methodology - women"
-	label var totindwlth_was_new_r1 "WAS methodology - men"
-	label var totindwlth_was_new_r2 "WAS methodology - women"
-	
-	export excel using "$output/was_report_underlying_data_new.xlsx", first(varl) sheet("median_indwealth_by_sex", replace)
-	
-end 
-
-capture program drop wealth_distribution_shares
-program define wealth_distribution_shares
-
-	use "$workingdata/was_clean", clear 
-	keep_hh_ref_person
-	
-	* Get deciles of household wealth under each methodology 
-	gen hhwlth_decile_gilt = .
-	gen hhwlth_decile_was_new = . 
-	forval i = 1/8 {
-		xtile hhwlth_decile_gilt`i' = tothhwlth_gilt_r [pw=xshhwgt] if dataset_no == `i', nq(10)
-		replace hhwlth_decile_gilt = hhwlth_decile_gilt`i' if dataset_no == `i'
-		xtile hhwlth_decile_was_new`i' = tothhwlth_was_new_r [pw=xshhwgt] if dataset_no == `i', nq(10)
-		replace hhwlth_decile_was_new = hhwlth_decile_was_new`i' if dataset_no == `i'
-		drop hhwlth_decile_gilt`i' hhwlth_decile_was_new`i'
-	}
-	
-	* Get total household wealth in each decile for each methodology 	
-	preserve
-	collapse (sum) tothhwlth_gilt_r [pw=xshhwgt], by(hhwlth_decile_gilt dataset_no)
-	ren *decile* decile 
-	tempfile tomerge 
-	save `tomerge', replace 
-	restore 
-	collapse (sum) tothhwlth_was_new_r [pw=xshhwgt], by(hhwlth_decile_was_new dataset_no)
-	ren *decile* decile
-	merge 1:1 decile dataset_no using `tomerge', assert(1 3) nogen
-	
-	* Get totals and shares 
-	foreach x in gilt was_new {
-		egen total_`x' = sum(tothhwlth_`x'_r), by(dataset_no)
-		gen shr_`x' = tothhwlth_`x'_r / total_`x'
-	}
-	
-	export excel decile shr* using "$output/was_report_underlying_data_new.xlsx" if dataset_no == 8, first(var) sheet("wealth_dist_r8_full", replace)
-	
-
-	* Simplify this 
-	recode decile (1 2 3 4 5 = 1) (6 7 8 = 2) (9 = 3) (10 = 4), gen(group)
-	collapse (sum) shr*, by(group dataset_no)
-	label define group 1 "Bottom 50%" 2 "50-80%" 3 "80-90%" 4 "Top 10%"
-	label values group group
-
-	* Export the top 10% share over time 
-	export excel dataset_no shr_* using "$output/was_report_underlying_data_new.xlsx" if group == 4, first(var) sheet("top_10pc_share_over_time", replace)
-	
-	* Reshape and clean up 
-	reshape wide shr_gilt shr_was_new, i(dataset_no) j(group)
-	forval i = 1/4 {
-		ren shr_*`i' shr`i'*
-	}
-	reshape long shr1 shr2 shr3 shr4, i(dataset_no) j(method) string
-	label var shr1 "Bottom 50%" 
-	label var shr2 "50-80%" 
-	label var shr3 "80-90%" 
-	label var shr4 "Top 10%"
-	label var method "Methodology"
-	replace method = "IFS methodology" if method == "gilt"
-	replace method = "ONS methodology" if method == "was_new"
-	
-	keep if dataset_no == 8 
-	drop dataset_no
-	
-	* Export excel 
-	export excel method shr_* using "$output/was_report_underlying_data_new.xlsx" if dataset_no == 8, first(varl) sheet("wealth_dist_r8", replace)
-	
-	
-	
-	* What if we do this at the individual level? 
-	use "$workingdata/was_clean", clear 
-	
-	* Make consistent weight 
-	replace xswgt_nonproxy = xswgt if persprox != 2 & dataset_no == 3
-	replace xswgt_nonproxy = 0 if persprox == 2 & dataset_no == 3
-	
-	keep if dataset_no >= 3
-
-	* Get deciles of individual wealth under each methodology 
-	gen indwlth_decile_gilt = .
-	gen indwlth_decile_was_new = . 
-	forval i = 3/8 {
-		xtile indwlth_decile_gilt`i' = totindwlth_gilt_r [pw=xswgt_nonproxy] if dataset_no == `i', nq(10)
-		replace indwlth_decile_gilt = indwlth_decile_gilt`i' if dataset_no == `i'
-		xtile indwlth_decile_was_new`i' = totindwlth_was_new_r [pw=xswgt_nonproxy] if dataset_no == `i', nq(10)
-		replace indwlth_decile_was_new = indwlth_decile_was_new`i' if dataset_no == `i'
-		drop indwlth_decile_gilt`i' indwlth_decile_was_new`i'
-	}
-	
-	* Get total household wealth in each decile for each methodology 	
-	preserve
-	collapse (sum) totindwlth_gilt_r [pw=xswgt_nonproxy], by(indwlth_decile_gilt dataset_no)
-	ren *decile* decile 
-	tempfile tomerge 
-	save `tomerge', replace 
-	restore 
-	collapse (sum) totindwlth_was_new_r [pw=xswgt_nonproxy], by(indwlth_decile_was_new dataset_no)
-	ren *decile* decile
-	merge 1:1 decile dataset_no using `tomerge', assert(1 3) nogen
-	
-	* Get totals and shares 
-	foreach x in gilt was_new {
-		egen total_`x' = sum(totindwlth_`x'_r), by(dataset_no)
-		gen shr_`x' = totindwlth_`x'_r / total_`x'
-	}
-	
-	* Also doesn't make much difference in R8
-	
-	
-
-end 
-
-

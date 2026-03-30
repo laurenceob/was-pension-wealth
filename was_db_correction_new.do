@@ -18,7 +18,6 @@ program define create_penvars_earlywaves
 	replace scndsch`dset' = 2 if missing(scndsch`dset')
 	
 	* Pension age correction for negative powers 
-	* this might be in poraget... i'll check 
 	gen rf`dset' = 60 if inrange(porage_f`dset', -6, -9) & frstsch`dset' == 1
 	replace rf`dset' = 50 if inrange(porage_f`dset', 0, 49) & frstsch`dset' == 1
 	replace rf`dset' = porage_f`dset' if missing(rf`dset') 
