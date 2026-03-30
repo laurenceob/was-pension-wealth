@@ -61,7 +61,9 @@ do "$code/calculate_annuity_rates"
 
 * Code for cleaning WAS and creating analysis sample 
 do "$code/get_was_vars"
+main 
 do "$code/clean_was"
 
 * Code to do WAS analysis in report 
 do "$code/was_analysis_new"
+main 
