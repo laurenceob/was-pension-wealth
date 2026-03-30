@@ -14,20 +14,35 @@ clear all
 macro drop _all
 set more off
 
-* Filepath globals
+********************************************************************************
+*** USER CONFIGURATION — update these paths before running
+********************************************************************************
+
+* Root directory of the project (parent of the replication package folder)
 global project_root "J:\PensionsTax\wealth_report"
+
+* Path to raw WAS Stata files (obtained from UK Data Service, SN 7215)
+global rawWAS "I:\WAS\unrestricted\stata\UKDA-7215-stata\stata\stata_se"
+
+********************************************************************************
+*** DO NOT EDIT BELOW THIS LINE
+********************************************************************************
+
+* Derived path globals (set relative to project_root — no need to edit)
 global code "$project_root/code"
 global workingdata "$project_root/data"
 global rawdata "$project_root/rawdata"
 global output "$project_root/output"
-global rawWAS "I:\WAS\unrestricted\stata\UKDA-7215-stata\stata\stata_se"
 
-set seed 359345 
+set seed 359345
 
 adopath + "$code/was_cleaning"
 
+* Discount rate used in constant-rate pension valuation scenario
 global constant_rate 0
-global cpih_index = 141.5 // cpih index in 2026 according to March 2026 EFO
+
+* CPIH index value for deflating wealth to March 2026 prices (March 2026 OBR EFO)
+global cpih_index = 141.5
 
 *** Run code
 

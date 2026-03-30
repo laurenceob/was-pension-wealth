@@ -1,7 +1,9 @@
 # Replication Package: How is wealth distributed across British households?
 
 **Authors:** Isaac Delestre and Laurence O'Brien
+
 **Report:** How is wealth distributed across British households? Reassessing the valuation of pensions
+
 **Date:** 9 April 2026
 
 ---
