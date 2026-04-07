@@ -70,8 +70,16 @@ program define mean_hh_wealth_over_time
 	* Just keep what we want to export 
 	keep dataset_no tothhwlth_gilt_r_mean tothhwlth_was_new_r_mean tothhwlth_gilt_r_agg tothhwlth_was_new_r_agg totpen_gilt_hh_r_mean totpen_was_new_hh_r_mean 
 	
+	* Label variables
+	label var tothhwlth_gilt_r_mean "Mean household wealth - IFS"
+	label var tothhwlth_was_new_r_mean "Mean household wealth - ONS"
+	label var totpen_gilt_hh_r_mean "Mean pension wealth - IFS"
+	label var totpen_was_new_hh_r_mean "Mean pension wealth - ONS"
+	label var tothhwlth_gilt_r_agg "Aggregate household wealth - IFS"
+	label var tothhwlth_was_new_r_agg "Aggregate household wealth - ONS"
+	
 	* Export to create word graph 
-	export excel using "$output/was_report_underlying_data_new.xlsx", first(var) sheet("mean_hh_wealth_over_time", replace)
+	export excel using "$output/was_report_underlying_data_new.xlsx", first(varl) sheet("mean_hh_wealth_over_time", replace)
 
 end 
 
@@ -90,9 +98,12 @@ program define wealth_composition_over_time
 		gen penshare_`x' = totpen_`x'_hh_r / tothhwlth_`x'_r
 	}
 	
-	* Export 
-	keep penshare* dataset_no
-	export excel using "$output/was_report_underlying_data_new.xlsx", first(var) sheet("penshare_over_time", replace)
+	* Label 
+	keep penshare_gilt penshare_was_new dataset_no
+	label var penshare_gilt "IFS methodology"
+	label var penshare_was_new "ONS methodology"	
+	
+	export excel using "$output/was_report_underlying_data_new.xlsx", first(varl) sheet("penshare_over_time", replace)
 	
 
 
@@ -147,8 +158,15 @@ program define plot_discount_rates
 	drop maturity
 	order date
 	
+	keep date real_gilt_yield scpe_* 
+	
+	* Label 
+	label var real_gilt_yield "Real 15-year gilt yield"
+	label var scpe_nom "SCAPE rate (nominal)"
+	label var scpe_real "SCAPE rate (real)"
+	
 	* Export to create word graph
-	export excel using "$output/was_report_underlying_data_new.xlsx", first(var) sheet("plot_discount_rates", replace)
+	export excel using "$output/was_report_underlying_data_new.xlsx", first(varl) sheet("plot_discount_rates", replace)
 
 
 end 
@@ -231,8 +249,14 @@ program define top_wealth_share_over_time
 	
 	use `tomerge', clear
 	
+	keep dataset_no top10_tothhwlth_gilt_r top10_tothhwlth_was_new_r
+	
+	* Label 
+	label var top10_tothhwlth_gilt_r "IFS methodology"
+	label var top10_tothhwlth_was_new_r "ONS methodology"
+	
 	* Export 
-	export excel using "$output/was_report_underlying_data_new.xlsx", first(var) sheet("top_10pc_share_over_time", replace)
+	export excel using "$output/was_report_underlying_data_new.xlsx", first(varl) sheet("top_10pc_share_over_time", replace)
 	
 	
 
@@ -465,9 +489,17 @@ program define mean_hh_wealth_over_time_all
 	
 	* Get median wealth by wave/round 
 	collapse (mean) *_mean [pw=xshhwgt], by(dataset_no)
+	
+	* Label 
+	label var tothhwlth_gilt_r_mean "IFS methodology (gilt)"
+	label var tothhwlth_aa_r_mean "IFS methodology (AA bond)"
+	label var tothhwlth_was_old_r_mean "ONS methodology (old)"
+	label var tothhwlth_was_new_r_mean "ONS methodology (new)"
+	label var tothhwlth_constant_r_mean "IFS methodology (no discounting)"
+	label var tothhwlth_scpe_r_mean "IFS methodology (SCAPE discounting)"
 			
 	* Export to create word graph 
-	export excel dataset_no *wlth*_mean using "$output/was_report_underlying_data_new.xlsx", first(var) sheet("mean_hh_wealth_over_time_all", replace)
+	export excel dataset_no *wlth*_mean using "$output/was_report_underlying_data_new.xlsx", first(varl) sheet("mean_hh_wealth_over_time_all", replace)
 
 end 
 
@@ -506,8 +538,14 @@ program define gini_coefficient_over_time
 	* Collapse 
 	collapse (mean) gini_*, by(dataset_no)
 	
+	keep dataset_no gini_gilt_hh gini_was_new_hh
+	
+	* Label 
+	label var gini_gilt_hh "IFS methodology"
+	label var gini_was_new_hh "ONS methodology"
+	
 	* Export 
-	export excel using "$output/was_report_underlying_data_new.xlsx", first(var) sheet("gini_coefficients", replace)
+	export excel using "$output/was_report_underlying_data_new.xlsx", first(varl) sheet("gini_coefficients", replace)
 
 end  
  

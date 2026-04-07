@@ -29,7 +29,7 @@ global rawWAS "I:\WAS\unrestricted\stata\UKDA-7215-stata\stata\stata_se"
 ********************************************************************************
 
 * Derived path globals (set relative to project_root — no need to edit)
-global code "$project_root/code"
+global code "$project_root/code/replication_package"
 global workingdata "$project_root/data"
 global rawdata "$project_root/rawdata"
 global output "$project_root/output"
