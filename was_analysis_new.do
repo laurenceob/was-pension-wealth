@@ -146,7 +146,7 @@ program define plot_discount_rates
 	replace scpe_real = 0.03 if year < 2016 | (year == 2016 & month < 4) // scape rate initially set at CPI+3 in 2011 budget. Assume same rate before that
 	replace scpe_real = 0.028 if year > 2016 | (year == 2016 & month >= 4)	// scape rate reduced to CPI+2.8 in 2016 Budget (16 Mar 2016)
 	replace scpe_real = 0.024 if year > 2018 | (year == 2018 & month >= 11) // scape rate reduced to CPI+2.4 in 2018 Budget (October 2018)
-	replace scpe_real = 0.017 if year > 2024 | (year == 2024 & month >= 4) // scape rate reduced to CPI+1.7 in 2024
+	replace scpe_real = 0.017 if year > 2023 | (year == 2023 & month >= 4) // scape rate reduced to CPI+1.7 in 2023
 	
 	gen scpe_nom = scpe_real + cpi_rate
 	
