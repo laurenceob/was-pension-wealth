@@ -68,18 +68,18 @@ program define mean_hh_wealth_over_time
 	collapse (mean) *_mean (sum) *_agg [pw=xshhwgt], by(dataset_no)
 		
 	* Just keep what we want to export 
-	keep dataset_no tothhwlth_gilt_r_mean tothhwlth_was_new_r_mean tothhwlth_gilt_r_agg tothhwlth_was_new_r_agg totpen_gilt_hh_r_mean totpen_was_new_hh_r_mean 
+	keep dataset_no tothhwlth_gilt_r_mean tothhwlth_was_new_r_mean /*tothhwlth_gilt_r_agg tothhwlth_was_new_r_agg totpen_gilt_hh_r_mean totpen_was_new_hh_r_mean */
 	
 	* Label variables
 	label var tothhwlth_gilt_r_mean "Mean household wealth - IFS"
 	label var tothhwlth_was_new_r_mean "Mean household wealth - ONS"
-	label var totpen_gilt_hh_r_mean "Mean pension wealth - IFS"
+	/*label var totpen_gilt_hh_r_mean "Mean pension wealth - IFS"
 	label var totpen_was_new_hh_r_mean "Mean pension wealth - ONS"
 	label var tothhwlth_gilt_r_agg "Aggregate household wealth - IFS"
-	label var tothhwlth_was_new_r_agg "Aggregate household wealth - ONS"
+	label var tothhwlth_was_new_r_agg "Aggregate household wealth - ONS" */
 	
 	* Export to create word graph 
-	export excel using "$output/was_report_underlying_data_new.xlsx", first(varl) sheet("mean_hh_wealth_over_time", replace)
+	export excel using "$output/was_report_underlying_data_new.xlsx", first(varl) sheet("fig1", replace)
 
 end 
 
@@ -103,7 +103,7 @@ program define wealth_composition_over_time
 	label var penshare_gilt "IFS methodology"
 	label var penshare_was_new "ONS methodology"	
 	
-	export excel using "$output/was_report_underlying_data_new.xlsx", first(varl) sheet("penshare_over_time", replace)
+	export excel using "$output/was_report_underlying_data_new.xlsx", first(varl) sheet("fig2", replace)
 	
 
 
@@ -177,7 +177,7 @@ program define plot_discount_rates
 	label var scpe_real "SCAPE rate (real)"
 	
 	* Export to create word graph
-	export excel using "$output/was_report_underlying_data_new.xlsx", first(varl) sheet("plot_discount_rates", replace)
+	export excel using "$output/was_report_underlying_data_new.xlsx", first(varl) sheet("fig3", replace)
 
 
 end 
@@ -216,7 +216,7 @@ program define wealth_dist_r8
 	order percentile tothhwlth_gilt_r tothhwlth_was_new_r
 	label var tothhwlth_gilt_r "IFS methodology"
 	label var tothhwlth_was_new_r "ONS methodology"
-	export excel using "$output/was_report_underlying_data_new.xlsx", first(varl) sheet("wealth_dist_r8", replace)
+	export excel using "$output/was_report_underlying_data_new.xlsx", first(varl) sheet("fig4", replace)
 
 	
 
@@ -267,7 +267,7 @@ program define top_wealth_share_over_time
 	label var top10_tothhwlth_was_new_r "ONS methodology"
 	
 	* Export 
-	export excel using "$output/was_report_underlying_data_new.xlsx", first(varl) sheet("top_10pc_share_over_time", replace)
+	export excel using "$output/was_report_underlying_data_new.xlsx", first(varl) sheet("fig5", replace)
 	
 	
 
@@ -303,7 +303,7 @@ program define avg_wealth_by_educ
 	label var totindwlth_was_new_r4 "Low educ - ONS"
 	
 	* Export 
-	export excel using "$output/was_report_underlying_data_new.xlsx", first(varl) sheet("median_wealth_by_educ", replace)
+	export excel using "$output/was_report_underlying_data_new.xlsx", first(varl) sheet("fig6", replace)
 	
 end 
 
@@ -334,8 +334,8 @@ program define db_share_by_educ
 	label var has_db_wealth "Has positive DB wealth"
 	label var has_db_pen "Enrolled in DB pension"
 	
-	* Export 
-	export excel using "$output/was_report_underlying_data_new.xlsx", first(varl) sheet("db_share_by_educ", replace)
+	* Export (we don't make a graph out of this so I've commented this out)
+	*export excel using "$output/was_report_underlying_data_new.xlsx", first(varl) sheet("db_share_by_educ", replace)
 
 
 end 
@@ -393,7 +393,7 @@ program define wealth_composition_by_age_r8
 	}
 	replace methodology = "IFS" if methodology == "gilt"
 	replace methodology = "ONS" if methodology == "was_new"
-	export excel using "$output/was_report_underlying_data_new.xlsx", first(varl) sheet("wealth_composition_by_age_r8", replace)
+	export excel using "$output/was_report_underlying_data_new.xlsx", first(varl) sheet("fig7", replace)
 
 end 
 
@@ -436,7 +436,7 @@ program define avg_wealth_by_age_r8
 	label var totindwlth_was_new_r "ONS methodology"
 		
 	* Export 
-	export excel using "$output/was_report_underlying_data_new.xlsx", first(varl) sheet("median_wealth_by_age_r8", replace)
+	export excel using "$output/was_report_underlying_data_new.xlsx", first(varl) sheet("fig8", replace)
 	
 end 
 
@@ -481,7 +481,7 @@ program define wealth_by_age_wave
 	label var totindwlth_was_new_r_shr3 "Age 65+ (ONS methodology)"
 
 	* Export 
-	export excel using "$output/was_report_underlying_data_new.xlsx", first(varl) sheet("wealth_shr_by_age_wave", replace)
+	export excel using "$output/was_report_underlying_data_new.xlsx", first(varl) sheet("fig9", replace)
 	
 end
 
@@ -510,7 +510,7 @@ program define mean_hh_wealth_over_time_all
 	label var tothhwlth_scpe_r_mean "IFS methodology (SCAPE discounting)"
 			
 	* Export to create word graph 
-	export excel dataset_no *wlth*_mean using "$output/was_report_underlying_data_new.xlsx", first(varl) sheet("mean_hh_wealth_over_time_all", replace)
+	export excel dataset_no *wlth*_mean using "$output/was_report_underlying_data_new.xlsx", first(varl) sheet("figb1", replace)
 
 end 
 
@@ -556,7 +556,7 @@ program define gini_coefficient_over_time
 	label var gini_was_new_hh "ONS methodology"
 	
 	* Export 
-	export excel using "$output/was_report_underlying_data_new.xlsx", first(varl) sheet("gini_coefficients", replace)
+	export excel using "$output/was_report_underlying_data_new.xlsx", first(varl) sheet("figb2", replace)
 
 end  
  
@@ -605,6 +605,6 @@ program define pens_wealth_comparison_by_age
 	label var gilt_was_new_ratio8 "Apr 20 - Mar 22"
 	
 	* Export 
-	export excel using "$output/was_report_underlying_data_new.xlsx", first(varl) sheet("pens_wealth_comparison_by_age", replace)
+	export excel using "$output/was_report_underlying_data_new.xlsx", first(varl) sheet("figb3", replace)
 
 end 

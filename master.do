@@ -19,19 +19,19 @@ set more off
 ********************************************************************************
 
 * Root directory of the project (parent of the replication package folder)
-global project_root "J:\PensionsTax\wealth_report"
+global project_root "PUT_FILE_PATH_HERE"
 
 * Path to raw WAS Stata files (obtained from UK Data Service, SN 7215)
-global rawWAS "I:\WAS\unrestricted\stata\UKDA-7215-stata\stata\stata_se"
+global rawWAS "PUT_FILE_PATH_HERE"
 
 ********************************************************************************
 *** DERIVED PATHS - ensure that you create these in your project directory before running
 ********************************************************************************
 
 * Derived path globals (set relative to project_root — no need to edit)
-global code "$project_root/code/replication_package"
+global code "$project_root/replication_package"
+global rawdata "$code/rawdata"
 global workingdata "$project_root/data"
-global rawdata "$project_root/rawdata"
 global output "$project_root/output"
 
 adopath + "$code/was_cleaning"

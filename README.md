@@ -20,20 +20,14 @@ In addition, the package produces all the figures and tables in Delestre and O'B
 
 ### Wealth and Assets Survey (WAS)
 
-The raw microdata are **not included** in this replication package. Access to the WAS must be obtained independently via the UK Data Service:
+The raw WAS microdata are **not included** in this replication package. Access to the WAS must be obtained independently via the UK Data Service:
 
 - **Dataset:** Wealth and Assets Survey, Waves 1–8
 - **UK Data Service SN:** 7215
 - **URL:** https://beta.ukdataservice.ac.uk/datacatalogue/studies/study?id=7215
 - **Access type:** Safeguarded (requires registration and project application)
 
-Once access is granted, download the Stata (`.dta`) files. The default path used in this package is:
-
-```
-I:\WAS\unrestricted\stata\UKDA-7215-stata\stata\stata_se
-```
-
-You will need to update this path in `master.do` if your files are stored elsewhere (see [Directory Setup](#directory-setup) below).
+Once access is granted, download the Stata (`.dta`) files and save them in a single folder called `data`. This folder should be in the same directory as where you save this replication package (see [Directory Setup](#directory-setup) below).
 
 ---
 
@@ -57,20 +51,20 @@ The pipeline uses six path globals, all defined at the top of `master.do`. Befor
 
 | Global | Default path | Description |
 |--------|-------------|-------------|
-| `$project_root` | `J:\PensionsTax\wealth_report` | Root directory for the project |
-| `$code` | `$project_root/code` | Directory containing this replication package |
-| `$workingdata` | `$project_root/data` | Where processed `.dta` files are saved |
+| `$project_root` | `PUT_FILE_PATH_HERE` | Root directory for the project |
+| `$code` | `$project_root/replication_package` | Directory containing this replication package |
 | `$rawdata` | `$project_root/rawdata` | Other raw input data (discount rates, mortality tables) |
+| `$workingdata` | `$project_root/data` | Where processed `.dta` files are saved |
 | `$output` | `$project_root/output` | Where figures and tables are saved |
-| `$rawWAS` | `I:\WAS\...\stata_se` | Location of raw WAS Stata files |
+| `$rawWAS` | `PUT_FILE_PATH_HERE` | Location of raw WAS Stata files |
 
-The directories `$workingdata`, `$rawdata`, and `$output` must exist before running. The `$code` directory is the root of this replication package.
+The directories `$workingdata` and `$output` must exist before running. The `$code` directory is the root of this replication package.
 
 ---
 
 ## How to Run
 
-Open Stata, navigate to the replication package directory, and run:
+After updating the directories, open Stata, navigate to the replication package directory, and run:
 
 ```stata
 do "master.do"
@@ -90,7 +84,7 @@ Constructs the annuity and discount rates used to value DB pension wealth.
 
 | Script | Description |
 |--------|-------------|
-| `was_db_correction_new.do` | Corrects raw DB pension wealth figures in WAS |
+| `was_db_correction_new.do` | Programs to correct raw DB pension wealth figures in WAS |
 | `get_discount_rates.do` | Constructs nominal and real discount rates from gilt and AA corporate bond yields |
 | `calculate_survivals.do` | Computes survival probabilities by age and sex using ONS life tables |
 | `calculate_forward_rates.do` | Derives forward rates from the discount rate term structure |
@@ -106,6 +100,41 @@ Prepares the WAS microdata and produces all outputs.
 | `get_was_vars.do` | Appends WAS waves 1–8 and harmonises variables across waves |
 | `clean_was.do` | Applies cleaning, wave 2 adjustments, and constructs wealth variables |
 | `was_analysis_new.do` | Defines and runs all analysis programs producing figures and tables |
+
+---
+
+## Using your own discount rate 
+
+Currently, the code calculates the value of pension wealth in all 8 waves/rounds of WAS under four discount rates:
+
+1. Real gilt yields
+2. Real AA corporate bond yields
+3. Real SCAPE rate
+4. Constant real discount rate of 0%
+
+The code can be adapted to calculate pension wealth using your own discount rate.
+
+The easiest ways to edit the discount rate used are either (i) to edit the `constant_rate` global defined in line 46 of `master.do` or (ii) if you want to define the SCAPE rate in a different way, editing the function `gen_real_scpe` in `get_discount_rates.do`. 
+
+Alternatively, you can update `clean_penwealth` in `was_db_correction_new` to accept new discount rates and annuity factor variables. In particular, you then need to provide a discount rate for four different types of pensions:
+
+* First current DB pension, to be saved in local `discount_rate1`
+* Second current DB pension, to be saved in local `discount_rate2`
+* Own retained rights, to be saved in local `discount_rate3`
+* Partner retained rights, to be saved in local `discount_rate4`
+
+And annuity factors for five different types of pensions:
+
+* First current DB pension, to be saved in local `ann_factor1`
+* Second current DB pension, to be saved in local `ann_factor2`
+* Own retained rights, to be saved in local `ann_factor3`
+* Partner retained rights, to be saved in local `ann_factor4`
+* Pensions in payment, to be saved in local `ann_factor5`
+
+These do not necessarily need to be in different variables. For example, when you specify `disc_type = scpe`, the variable scpe_rate is set equal to all four discount rates. 
+
+The rest of the code can help you create manually-calculated actuarially fair annuity factors for different discount rates. In particular, if you want to create these annuity factors for a new discount rate, you should create this new discount rate variable in calculate_annuity_rates (for example, similar to how we create the SCAPE rate in that file) and add it into the loop starting on line 62. This will then calculate year-by-month-by-birthYear-by-retirementAge-by-sex-by-partnerStatus annuity factors for your new discount rate. Then, you need to edit the code in `get_was_vars.do` to ensure that the `clean_penwealth` file runs for this new discount rate and annuity factor combo.
+
 
 ---
 
@@ -147,6 +176,8 @@ Two custom Stata ado files are included in the `was_cleaning/` subdirectory and 
 - Wealth is deflated to March 2026 prices using CPIH (`$cpih_index = 141.5`, from the March 2026 OBR EFO).
 - The RPI–CPI wedge (`$rpicpiwedge = 0.009`) and CPIH–CPI wedge (`$cpihcpiwedge = 0.0039`) used in pension valuation are sourced from OBR publications and set in `master.do`.
 - Home contents wealth is reduced by 75% following Advani et al. (2021), as the WAS questionnaire elicits replacement rather than market value.
+
+See the report **link here** for more information. 
 
 ---
 

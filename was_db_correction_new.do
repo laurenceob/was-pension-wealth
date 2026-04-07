@@ -108,7 +108,7 @@ program define clean_penwealth
 		local discount_rate1 real_gilt_yield1 // Current DB pension 1
 		local discount_rate2 real_gilt_yield2 // Current DB pension 2
 		local discount_rate3 real_gilt_yield3 // Own retained rights
-		local discount_rate4 real_gilt_yield4 // Partner retained rights (assert this is the same)
+		local discount_rate4 real_gilt_yield4 // Partner retained rights 
 	}
 	else {
 		forval i = 1/4 {
