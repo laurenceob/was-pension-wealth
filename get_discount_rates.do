@@ -4,6 +4,25 @@
 **** Date started: 	12/06/2025
 **** Description:	Takes raw data containing gilt yields and corporate bond yields and cleans it ready for use
 ********************************************************************************/
+********************************************************************************
+* SCAPE rate (real)
+********************************************************************************
+
+* Rather than creating a dataset for this, it's just a few lines of code so it's in a program instead 
+
+cap program drop gen_real_scpe
+program define gen_real_scpe
+
+	syntax, newvar(string) yearvar(varname) monthvar(varname)
+
+	gen `newvar' = 0.035 // scape rate was initially based on social time preference rate - RPI+3.5
+	replace `newvar' = 0.03 if `yearvar' > 2011 | (`yearvar' == 2011 & `monthvar' >= 4) // scape rate set at CPI+3 in 2011 budget (and moves to reflect long term GDP growth)
+	replace `newvar' = 0.028 if `yearvar' > 2016 | (`yearvar' == 2016 & `monthvar' >= 4)	// scape rate reduced to CPI+2.8 in 2016 Budget (16 Mar 2016)
+	replace `newvar' = 0.024 if `yearvar' > 2018 | (`yearvar' == 2018 & `monthvar' >= 11) // scape rate reduced to CPI+2.4 in 2018 Budget (October 2018)
+	replace `newvar' = 0.017 if `yearvar' > 2023 | (`yearvar' == 2023 & `monthvar' >= 4) // scape rate reduced to CPI+1.7 in 2023
+
+end
+
 
 ********************************************************************************
 * Gilts

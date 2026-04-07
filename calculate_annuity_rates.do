@@ -53,12 +53,7 @@ replace survival = 1 if age < retage + 5
 
 * Calculate the different discount rate/rates of return
 ren (real_gilt_forward_rate real_aa_forward_rate) (gilt_rate aa_rate)
-gen scpe_rate = 0.03 // SCAPE rate initially set at CPI+3 in 2011 budget. Assume same rate before that
-replace scpe_rate = 0.028 if year > 2016 | (year == 2016 & month >= 4) 
-// SCAPE rate reduced to CPI+2.8 in 2016 Budget (16 Mar 2016)
-replace scpe_rate = 0.024 if year > 2018 | (year == 2018 & month >= 11)
-// SCAPE rate reduced to CPI+2.4 in 2018 Budget (29 Oct 2018)
-
+gen_real_scpe, newvar(scpe_rate) yearvar(year) monthvar(month)
 gen constant_rate = $constant_rate
 
 * Calculate the annuity rates

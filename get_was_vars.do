@@ -349,14 +349,8 @@ program define merge_append_was
 		* Step 7: Merge in AA corporate bond yields 
 		merge m:1 year`wvsfx' month`wvsfx' using `aayields', assert(2 3) keep(3) nogen
 		
-		* Step 8: Merge in SCAPE rate 
-		gen scpe_rate = .
-		replace scpe_rate = 0.03 if year`wvsfx' < 2016 | (year`wvsfx' == 2016 & month`wvsfx' < 4)
-		// SCAPE rate initially set at CPI+3 in 2011 budget. Assume same rate before that
-		replace scpe_rate = 0.028 if year`wvsfx' > 2016 | (year`wvsfx' == 2016 & month`wvsfx' >= 4)
-		// SCAPE rate reduced to CPI+2.8 in 2016 Budget (16 Mar 2016)
-		replace scpe_rate = 0.024 if year`wvsfx' > 2018 | (year`wvsfx' == 2018 & month`wvsfx' >= 11)
-		// SCAPE rate reduced to CPI+2.4 in 2018 Budget (October 2018)
+		* Step 8: Add in (real) SCAPE rate 
+		gen_real_scpe, newvar(scpe_rate) yearvar(year`wvsfx') monthvar(month`wvsfx')
 		
 		* Step 9: Merge in constant discount rate 
 		gen constant_rate = $constant_rate

@@ -127,6 +127,20 @@ program define plot_discount_rates
 	replace cpi_rate = cpi_rate / 100 
 	tempfile cpi 
 	save `cpi', replace 
+
+	* Get monthly RPI
+	import delimited using "$rawdata/rpi_rate", rowrange(394) clear
+	ren (title rpiallitemspercentagechangeover1) (date rpi_rate)
+	gen year = substr(date, 1, 4)
+	gen monthname = substr(date, -3, .)
+	gen datevar = date("1" + lower(monthname) + "2000", "DMY")
+	gen month = month(datevar)
+	drop date monthname datevar
+	destring year, replace 
+	replace rpi_rate = rpi_rate / 100 
+	tempfile rpi 
+	save `rpi', replace 
+
 	
 	* Start with gilt yields 
 	use "$workingdata/real_gilt_yields", clear
@@ -140,15 +154,12 @@ program define plot_discount_rates
 	*assert _merge == 3
 	drop _merge
 	merge 1:1 year month using `cpi', keep(1 3) nogen
+	merge 1:1 year month using `rpi', keep(3) nogen
 	
 	* Add in SCAPE rate 
-	gen scpe_real = .
-	replace scpe_real = 0.03 if year < 2016 | (year == 2016 & month < 4) // scape rate initially set at CPI+3 in 2011 budget. Assume same rate before that
-	replace scpe_real = 0.028 if year > 2016 | (year == 2016 & month >= 4)	// scape rate reduced to CPI+2.8 in 2016 Budget (16 Mar 2016)
-	replace scpe_real = 0.024 if year > 2018 | (year == 2018 & month >= 11) // scape rate reduced to CPI+2.4 in 2018 Budget (October 2018)
-	replace scpe_real = 0.017 if year > 2023 | (year == 2023 & month >= 4) // scape rate reduced to CPI+1.7 in 2023
-	
-	gen scpe_nom = scpe_real + cpi_rate
+	gen_real_scpe, newvar(scpe_real) yearvar(year) monthvar(month)
+	gen scpe_nom = scpe_real + cpi_rate if year > 2011 | (year == 2011 & month >= 4)
+	replace scpe_nom = scpe_real + rpi_rate if year < 2011 | (year == 2011 & month < 4)
 	
 	* Sort out the date 
 	gen date = ym(year, month)
