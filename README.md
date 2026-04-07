@@ -27,7 +27,7 @@ The raw WAS microdata are **not included** in this replication package. Access t
 - **URL:** https://beta.ukdataservice.ac.uk/datacatalogue/studies/study?id=7215
 - **Access type:** Safeguarded (requires registration and project application)
 
-Once access is granted, download the Stata (`.dta`) files and save them in a single folder called `data`. This folder should be in the same directory as where you save this replication package (see [Directory Setup](#directory-setup) below).
+Once access is granted, download the Stata (`.dta`) files and save them in a single folder. You should then update the global `$rawWAS` with the file path where you saved these files (see [Directory Setup](#directory-setup) below).
 
 ---
 
