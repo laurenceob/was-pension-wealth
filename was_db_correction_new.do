@@ -121,7 +121,7 @@ program define clean_penwealth
 	
 	assert inlist("`ann_type'", "gilt", "scpe", "aa", "constant", "wasOLD")
 	
-	if "`i'" != "wasOLD" {
+	if "`ann_type'" != "wasOLD" {
 		forval i = 1/5 {
 			local ann_factor`i' anntyfctr_`ann_type'`i'
 		}
